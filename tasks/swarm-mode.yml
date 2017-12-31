@@ -1,0 +1,22 @@
+---
+- name: "cleanup stack if recreate is true"
+  shell: "docker stack down {{ item }}"
+  ignore_errors: true
+  args:
+    chdir: "{{ compose_dir }}/{{ item }}"
+  with_items:
+    - "{{ dock_com_exec_services }}"
+  when: dock_com_exec_recreate
+
+
+- name: "User docker stack in Docker swarm mode"
+  shell: "docker stack deploy -c docker-compose.yml {{ item }}"
+  args:
+    chdir: "{{ compose_dir }}/{{ item }}"
+  register: swarm_stack_stdout
+  with_items:
+    - "{{ dock_com_exec_services }}"
+
+- debug:
+    var: swarm_stack_stdout
+    verbosity: 2

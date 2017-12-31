@@ -1,0 +1,56 @@
+---
+- name: "List -> dock_com_exec_services should be present"
+  assert:
+    that:
+      -  dock_com_exec_services is iterable
+
+- name: "set compose dir when in scp mode"
+  set_fact:
+    compose_dir: "{{ dock_com_exec_dest_dir }}"
+  when: dock_com_exec_mode == 'scp'
+
+- name: "set compose dir when in scm mode"
+  set_fact:
+    compose_dir: "{{ dock_com_exec_dest_dir }}/{{ dock_com_exec_git_repo_name }}"
+  when: dock_com_exec_mode == 'scm'
+
+- name: "Create docker compose dirs"
+  file:
+    path: "{{ compose_dir }}/{{ item }}"
+    state: directory
+    owner: "{{ dock_com_exec_user }}"
+    group: "{{ dock_com_exec_group }}"
+    mode: 0755
+  with_items:
+    - "{{ dock_com_exec_services }}"
+  when: ((dock_com_exec_mode == 'scp') or (dock_com_exec_mode == 'sync'))
+
+- name: "Copy compose files to remote host"
+  copy:
+    src: "{{ dock_com_exec_src_dir }}/{{ item }}"
+    dest: "{{ dock_com_exec_dest_dir }}"
+    owner: "{{ dock_com_exec_user }}"
+    group: "{{ dock_com_exec_group }}"
+    mode: 0755
+  with_items:
+    - "{{ dock_com_exec_services }}"
+  when: ((dock_com_exec_mode == 'scp') or (dock_com_exec_mode == 'sync'))
+
+- name: "Git checkout from {{ dock_com_exec_git_url }}"
+  git:
+    repo: "{{ dock_com_exec_git_url }}"
+    dest: "{{ compose_dir }}"
+    accept_hostkey: yes
+    version: "{{ dock_com_exec_branch }}"
+    force: true
+  when: dock_com_exec_mode == 'scm'
+
+- name: "Upgrade pip - required for docker-compose"
+  shell: "pip uninstall -y docker-py; pip uninstall -y docker; pip install docker"
+  when: dock_com_exec_upgrade_pip
+
+- name: "Install docker compose"
+  pip:
+    name: docker-compose
+    state: latest
+  when: dock_com_exec_install_compose

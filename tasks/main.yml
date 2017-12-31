@@ -1,0 +1,13 @@
+---
+# tasks file for docker-compose-executor
+
+- name: "Include common docker-compose/stack tasks"
+  include: "common.yml"
+
+- name: "Include deploy tasks in swarm mode"
+  include: "swarm-mode.yml"
+  when: '"swarm-managers" in group_names'
+
+- name: "Include deploy tasks in swarm mode"
+  include: "docker-native-mode.yml"
+  when: '"swarm" not in group_names'

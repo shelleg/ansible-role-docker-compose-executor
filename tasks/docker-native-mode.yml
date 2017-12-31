@@ -1,0 +1,25 @@
+---
+- debug:
+    msg: "{{ compose_dir }}/{{ item }}"
+    verbosity: 2
+  with_items:
+    - "{{ dock_com_exec_services }}"
+
+- name: "cleanup stack if recreate is true"
+  shell: "docker-compose down"
+  args:
+    chdir: "{{ compose_dir }}/{{ item }}"
+  with_items:
+    - "{{ dock_com_exec_services }}"
+  when: dock_com_exec_recreate
+  ignore_errors: true
+
+- name: "User docker-compose in Docker native mode"
+  docker_service:
+    project_src: "{{ compose_dir }}/{{ item }}"
+  register: dc_stdout
+  with_items:
+    - "{{ dock_com_exec_services }}"
+- debug:
+    var: dc_stdout
+    verbosity: 2

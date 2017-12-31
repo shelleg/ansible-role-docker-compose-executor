@@ -1,0 +1,23 @@
+---
+# defaults file for docker-compose-executor
+dock_com_exec_user: root
+dock_com_exec_group: root
+
+# should this role install docker-compose / pip ?!
+dock_com_exec_upgrade_pip: false
+dock_com_exec_install_compose: false
+
+dock_com_exec_basedir: "/opt/dock_com_exec/"
+dock_com_exec_recreate: true
+
+# docker_com_exec_mode: copy # either copy, sync, scm (git)
+dock_com_exec_src_dir: "{{ playbook_dir }}/../docker-compose/"
+dock_com_exec_dest_dir: "{{ dock_com_exec_basedir }}"
+
+dock_com_exec_mode: "scm" # either copy, sync(TBD), scm (git)
+dock_com_exec_services:
+  - docker-compose/sample
+
+dock_com_exec_git_url: "https://github.com/shelleg/docker-collections.git"
+dock_com_exec_git_repo_name: "docker-collections"
+dock_com_exec_branch: "master"
